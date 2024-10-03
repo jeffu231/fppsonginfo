@@ -1,0 +1,12 @@
+################################################################################
+# FPP Song Info Consumer
+################################################################################
+# docker-compose -f docker-compose.yml -f docker-compose-dev.yml up -d
+################################################################################
+
+services:
+  fpp-song-info:
+    build:
+      context: .
+      dockerfile: FPPSongInfo/Dockerfile
+    
