@@ -21,14 +21,18 @@ public class FppConsumerService:BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogDebug("FPP Consumer Service Execute");
+       _logger.LogDebug("FPP Consumer Service Execute");
+       
+        while (!_mqttClient.IsConnected)
+        {
+            await Task.Delay(1000, stoppingToken);
+            _logger.LogDebug("Waiting for MQTT to Connect");
+        }
+        
         _mqttClient.OnMessageReceived += MqttClientOnOnMessageReceived;
         var songTopic = _config.GetValue<string>("Mqtt:RootTopic") + _config.GetValue<string>("Mqtt:SongTopic") + "/#";
         _logger.LogDebug("Subscribing to Topic {Topic}", songTopic);
-        while (!_mqttClient.IsConnected)
-        {
-            _logger.LogDebug("Waiting for MQTT to Connect");
-        }
+        
         await _mqttClient.SubscribeAsync(songTopic);
         while (!stoppingToken.IsCancellationRequested)
         {
