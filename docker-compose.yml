@@ -1,0 +1,16 @@
+################################################################################
+# FPP Song Info Consumer
+################################################################################
+# docker-compose -f docker-compose.yml up -d
+################################################################################
+
+services:
+  fpp-song-info:
+    image: ghcr.io/jeffu231/fppsonginfo:latest
+    container_name: fpp-song-info
+    restart: unless-stopped
+    volumes:
+      - fpp-song-info-data:/app/appdata
+volumes:
+  fpp-song-info-data:
+    external: true
