@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyDescriptionAttribute("A consumer that listens for MQTT messages about the playing media and writes it t" +
     "o a simple file.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9f65a72399751b072e5eaf0c675cae107068b768")]
 [assembly: System.Reflection.AssemblyProductAttribute("FPPSongInfo")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FPPSongInfo")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
