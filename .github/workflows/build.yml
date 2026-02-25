@@ -70,13 +70,9 @@ jobs:
           echo "$(versionize changelog)" > latest_changelog.md
           cat latest_changelog.md
             
-      - name: Build
-        if: steps.versionize.outcome == 'success'
-        run: dotnet build -c Release --no-restore
-
       - name: Publish
         if: steps.versionize.outcome == 'success'
-        run: dotnet publish '.\FPPSongInfo\FPPSongInfo.csproj' -p:PublishProfile=FolderProfile.pubxml --no-build /p:EnableWindowsTargeting=true
+        run: dotnet publish '.\FPPSongInfo\FPPSongInfo.csproj' -p:PublishProfile=FolderProfile.pubxml
 
       - name: Zip files
         if: steps.versionize.outcome == 'success'
