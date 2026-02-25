@@ -5,3 +5,6 @@ All notable changes to this project will be documented in this file. See [versio
 <a name="1.0.1"></a>
 ## [1.0.1](https://www.github.com/jeffu231/fppsonginfo/releases/tag/v1.0.1) (2026-02-25)
 
+<a name="1.0.1"></a>
+## [1.0.1](https://www.github.com/jeffu231/fppsonginfo/releases/tag/v1.0.1) (2026-02-25)
+
