@@ -11,6 +11,7 @@ public static class ConfigureServiceCollectionExtension
         Console.WriteLine("ConfigureServicesFromConfig");
         services.AddSingleton<IMqttClient, MqttClient>();
         services.AddHostedService<FppConsumerService>();
+
         return services;
     }
 }

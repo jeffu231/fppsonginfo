@@ -27,14 +27,16 @@ public class FppConsumerService:BackgroundService
         _logger.LogDebug("Subscribing to Topic {Topic}", songTopic);
         while (!_mqttClient.IsConnected)
         {
+            await Task.Delay(1000, stoppingToken);
             _logger.LogDebug("Waiting for MQTT to Connect");
         }
+        _logger.LogDebug("MQTT is Connected");
         await _mqttClient.SubscribeAsync(songTopic);
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(1000, stoppingToken);
         }
-        await _mqttClient.SubscribeAsync(songTopic);
+        await _mqttClient.UnsubscribeAsync(songTopic);
         _logger.LogDebug("FPP Consumer Service execute finishing");
     }
     

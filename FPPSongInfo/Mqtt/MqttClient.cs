@@ -15,9 +15,12 @@ public class MqttClient:IMqttClient
     public MqttClient(IConfiguration configuration, ILogger<MqttClient> logger)
     {
         _logger = logger;
-        
-        // Creates a new client
-        var builder = new MqttClientOptionsBuilder()
+
+        _logger.LogInformation("Initializing MQTT Client with configuration: {Configuration}", configuration.GetSection("Mqtt")
+	        .GetChildren().ToDictionary(x => x.Key, x => x.Value));
+
+		// Creates a new client
+		var builder = new MqttClientOptionsBuilder()
             .WithClientId(configuration["Mqtt:ClientId"])
             .WithTcpServer(configuration["Mqtt:Broker"],  configuration.GetValue<int>("Mqtt:Port"));
 
@@ -63,7 +66,7 @@ public class MqttClient:IMqttClient
         }
         else
         {
-            _logger.LogDebug("Client not connected");
+            _logger.LogError("Client not connected");
             return false;
         }
         
@@ -89,7 +92,7 @@ public class MqttClient:IMqttClient
 
     private Task MqttClientOnConnectingFailedAsync(ConnectingFailedEventArgs arg)
     {
-        _logger.LogDebug("Couldn\'t connect to broker.{ArgException}", arg.Exception);
+        _logger.LogError("Couldn\'t connect to broker.{ArgException}", arg.Exception);
         return Task.CompletedTask;
     }
 
