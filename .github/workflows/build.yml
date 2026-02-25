@@ -33,7 +33,7 @@ jobs:
         run: dotnet --version
 
       - name: Restore dependencies
-        run: dotnet restore /p:EnableWindowsTargeting=true
+        run: dotnet restore --runtime win-x64
 
       - name: Setup git
         run: |
@@ -72,7 +72,7 @@ jobs:
             
       - name: Build
         if: steps.versionize.outcome == 'success'
-        run: dotnet build -c Release --no-restore /p:EnableWindowsTargeting=true
+        run: dotnet build -c Release --no-restore
 
       - name: Publish
         if: steps.versionize.outcome == 'success'
