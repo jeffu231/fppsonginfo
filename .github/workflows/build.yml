@@ -90,8 +90,8 @@ jobs:
         if: steps.versionize.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: "Radio Automation"
-          path:  "Radio-Automation.zip"
+          name: "FPP Song Info"
+          path:  "FPPSongInfo.zip"
           
       - name: Download Artifact
         if: steps.versionize.outcome == 'success'
