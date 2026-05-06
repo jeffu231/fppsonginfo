@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 using MQTTnet.Client;
 using IMqttClient = FPPSongInfo.Mqtt.IMqttClient;
 
@@ -41,7 +42,7 @@ public class RadioAutomationConsumerService(
     private async void MqttClientOnOnMessageReceived(object? sender, MqttApplicationMessageReceivedEventArgs e)
     {
         logger.LogDebug("Message received on Topic {Topic}", e.ApplicationMessage.Topic);
-        if (e.ApplicationMessage.Topic.EndsWith("artist"))
+        if (e.ApplicationMessage.Topic.EndsWith("songinfo"))
         {
             var songInfoPayload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
             var songInfo = System.Text.Json.JsonSerializer.Deserialize<SongInfo>(songInfoPayload);
@@ -49,6 +50,7 @@ public class RadioAutomationConsumerService(
             
             if (songInfo != null)
             {
+                logger.LogDebug("Writing song info");
                 await songInfoWriter.UpdateSongInfo(songInfo.Artist, songInfo.Title);
             }
         }
@@ -56,8 +58,11 @@ public class RadioAutomationConsumerService(
 
     private class SongInfo
     {
+        [JsonPropertyName("artist")] 
         public string Artist { get; init; } = string.Empty;
+        [JsonPropertyName("title")]
         public string Title { get; init; } = string.Empty;
+        [JsonPropertyName("album")]
         public string Album { get; init; } =  string.Empty;
     }
 }

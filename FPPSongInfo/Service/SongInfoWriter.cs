@@ -17,6 +17,7 @@ public class SongInfoWriter(IConfiguration configuration, ILogger<SongInfoWriter
                 }
 
                 var path = Path.Combine(filePath, fileName);
+                logger.LogDebug("Writing song info to path {Path} for {Artist} - {Title}", path, artist, title);
                 fs = File.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
                 await using TextWriter tw = new StreamWriter(fs);
                 await tw.WriteLineAsync($"{artist}{(string.IsNullOrEmpty(artist) ? string.Empty : " - ")}{title}");
