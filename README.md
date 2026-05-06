@@ -9,11 +9,11 @@ something like a RDS receiver. In my case TinyRDS reads the song info from a fil
 
 Build at the command line as a single file exe.
 
-dotnet publish -c Release -p:PublishSingleFile=True
+dotnet publish -p:PublishProfile=FolderProfile.pubxml
 
 ### Deploy
 
-Deploy as a windows service. - Use branch windows-service
+Deploy as a windows service.
 
 From admin powershell where binpath is the location of the service exe.
 
