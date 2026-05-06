@@ -10,7 +10,9 @@ public static class ConfigureServiceCollectionExtension
     {
         Console.WriteLine("ConfigureServicesFromConfig");
         services.AddSingleton<IMqttClient, MqttClient>();
+        services.AddSingleton<ISongInfoWriter, SongInfoWriter>();
         services.AddHostedService<FppConsumerService>();
+        services.AddHostedService<RadioAutomationConsumerService>();
 
         return services;
     }
