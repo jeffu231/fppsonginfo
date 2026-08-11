@@ -1,14 +1,17 @@
+using FPPSongInfo.Configuration;
+using Microsoft.Extensions.Options;
+
 namespace FPPSongInfo.Service;
 
-public class SongInfoWriter(IConfiguration configuration, ILogger<SongInfoWriter> logger) : ISongInfoWriter
+internal sealed class SongInfoWriter(IOptions<OutputOptions> outputOptions, ILogger<SongInfoWriter> logger) : ISongInfoWriter
 {
     public async Task UpdateSongInfo(string artist, string title)
     {
         FileStream? fs = null;
         try
         {
-            var filePath = configuration.GetValue<string>("Output:FilePath");
-            var fileName = configuration.GetValue<string>("Output:FileName");
+            var filePath = outputOptions.Value.FilePath;
+            var fileName = outputOptions.Value.FileName;
             if (!string.IsNullOrEmpty(filePath) && !string.IsNullOrEmpty(fileName))
             {
                 if (!Directory.Exists(filePath))

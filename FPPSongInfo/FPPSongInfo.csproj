@@ -20,6 +20,7 @@
 				<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
 				<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
 				<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.10" />
+				<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.10" />
 				<PackageReference Include="MQTTnet" Version="4.3.7.1207" />
 				<PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.3.7.1207" />
 		</ItemGroup>

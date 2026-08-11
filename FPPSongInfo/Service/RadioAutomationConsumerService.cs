@@ -1,13 +1,16 @@
 ﻿using System.Text;
 using System.Text.Json.Serialization;
+using FPPSongInfo.Configuration;
+using Microsoft.Extensions.Options;
 using MQTTnet.Client;
 using IMqttClient = FPPSongInfo.Mqtt.IMqttClient;
 
 namespace FPPSongInfo.Service;
 
-public class RadioAutomationConsumerService(
+internal sealed class RadioAutomationConsumerService(
     IMqttClient mqttClient,
-    IConfiguration configuration,
+    IOptions<MqttOptions> mqttOptions,
+    IOptions<RadioAutomationOptions> radioAutomationOptions,
     ILogger<RadioAutomationConsumerService> logger,
     ISongInfoWriter songInfoWriter)
     : BackgroundService
@@ -16,7 +19,7 @@ public class RadioAutomationConsumerService(
     {
         logger.LogDebug("Radio Automation Consumer Service Execute");
         mqttClient.OnMessageReceived += MqttClientOnOnMessageReceived;
-        var songTopic = configuration.GetValue<string>("Mqtt:RootTopic") + configuration.GetValue<string>("RadioAutomation:SongTopic") + "/#";
+        var songTopic = mqttOptions.Value.RootTopic + radioAutomationOptions.Value.SongTopic + "/#";
         logger.LogDebug("Subscribing to Topic {Topic}", songTopic);
         while (!mqttClient.IsConnected)
         {

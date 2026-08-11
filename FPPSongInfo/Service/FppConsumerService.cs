@@ -1,26 +1,31 @@
 using System.Text;
+using FPPSongInfo.Configuration;
+using Microsoft.Extensions.Options;
 using MQTTnet.Client;
 using IMqttClient = FPPSongInfo.Mqtt.IMqttClient;
 
 namespace FPPSongInfo.Service;
 
-public class FppConsumerService:BackgroundService
+internal sealed class FppConsumerService:BackgroundService
 {
     private readonly IMqttClient _mqttClient;
     private readonly ILogger<FppConsumerService> _logger;
-    private readonly IConfiguration _config;
+    private readonly MqttOptions _mqttOptions;
+    private readonly FppOptions _fppOptions;
     private readonly ISongInfoWriter _songInfoWriter;
     private string _artist = string.Empty;
     private string _title = string.Empty;
     
     public FppConsumerService(
         IMqttClient mqttClient,
-        IConfiguration configuration,
+        IOptions<MqttOptions> mqttOptions,
+        IOptions<FppOptions> fppOptions,
         ILogger<FppConsumerService> logger,
         ISongInfoWriter songInfoWriter)
     {
         _mqttClient = mqttClient;
-        _config = configuration;
+        _mqttOptions = mqttOptions.Value;
+        _fppOptions = fppOptions.Value;
         _logger = logger;
         _songInfoWriter = songInfoWriter;
     }
@@ -29,7 +34,7 @@ public class FppConsumerService:BackgroundService
     {
         _logger.LogDebug("FPP Consumer Service Execute");
         _mqttClient.OnMessageReceived += MqttClientOnOnMessageReceived;
-        var songTopic = _config.GetValue<string>("Mqtt:RootTopic") + _config.GetValue<string>("FPP:SongTopic") + "/#";
+        var songTopic = _mqttOptions.RootTopic + _fppOptions.SongTopic + "/#";
         _logger.LogDebug("Subscribing to Topic {Topic}", songTopic);
         while (!_mqttClient.IsConnected)
         {

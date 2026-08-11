@@ -1,3 +1,5 @@
+using FPPSongInfo.Configuration;
+using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
@@ -5,24 +7,28 @@ using MQTTnet.Protocol;
 
 namespace FPPSongInfo.Mqtt;
 
-public class MqttClient:IMqttClient
+internal sealed class MqttClient:IMqttClient
 {
     private readonly IManagedMqttClient _mqttClient;
     private readonly ILogger<MqttClient> _logger;
 
     public event EventHandler<MqttApplicationMessageReceivedEventArgs>? OnMessageReceived;
 
-    public MqttClient(IConfiguration configuration, ILogger<MqttClient> logger)
+    public MqttClient(IOptions<MqttOptions> mqttOptions, ILogger<MqttClient> logger)
     {
         _logger = logger;
+        var mqttConfiguration = mqttOptions.Value;
 
-        _logger.LogInformation("Initializing MQTT Client with configuration: {Configuration}", configuration.GetSection("Mqtt")
-	        .GetChildren().ToDictionary(x => x.Key, x => x.Value));
+        _logger.LogInformation(
+            "Initializing MQTT client for broker {Broker} on port {Port} with client ID {ClientId}",
+            mqttConfiguration.Broker,
+            mqttConfiguration.Port,
+            mqttConfiguration.ClientId);
 
 		// Creates a new client
 		var builder = new MqttClientOptionsBuilder()
-            .WithClientId(configuration["Mqtt:ClientId"])
-            .WithTcpServer(configuration["Mqtt:Broker"],  configuration.GetValue<int>("Mqtt:Port"));
+            .WithClientId(mqttConfiguration.ClientId)
+            .WithTcpServer(mqttConfiguration.Broker, mqttConfiguration.Port);
 
         // Create client options objects
         var options = new ManagedMqttClientOptionsBuilder()
