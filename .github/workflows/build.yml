@@ -1,28 +1,36 @@
 name: Build and Publish
 
 on:
-  # trigger manual
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.editorconfig'
+      - '.github/workflows/build.yml'
+      - 'FPPSongInfo/**'
+      - 'FPPSongInfo.sln'
+      - 'global.json'
   push:
     branches:
       - master
     paths:
+      - '.editorconfig'
+      - '.github/workflows/build.yml'
       - 'FPPSongInfo/**'
+      - 'FPPSongInfo.sln'
+      - 'global.json'
 
 env:
   HUSKY: 0
 
 jobs:
-  build-and-publish:
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
     permissions:
-      packages: write
-      contents: write
-    
+      contents: read
+
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
@@ -33,7 +41,38 @@ jobs:
         run: dotnet --version
 
       - name: Restore dependencies
-        run: dotnet restore --runtime win-x64
+        run: dotnet restore FPPSongInfo.sln --runtime win-x64
+
+      - name: Build
+        run: dotnet build FPPSongInfo.sln --no-restore
+
+      - name: Test
+        run: dotnet test FPPSongInfo.sln --no-build
+
+      - name: Verify formatting
+        run: dotnet format FPPSongInfo.sln --verify-no-changes --no-restore
+
+  release:
+    name: Release
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore dependencies
+        run: dotnet restore FPPSongInfo.sln --runtime win-x64
 
       - name: Setup git
         run: |
@@ -51,7 +90,7 @@ jobs:
       - name: Test if release required
         if: steps.versionize.outcome != 'success'
         run: echo "Skipping Release. No release required."
-        
+
       - name: Push changes to GitHub
         if: steps.versionize.outcome == 'success'
         uses: ad-m/github-push-action@master
@@ -59,7 +98,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
           tags: true
-           
+
       - name: Get current version
         if: steps.versionize.outcome == 'success'
         run: echo "VERSION=v$(versionize inspect)" >> $GITHUB_ENV
@@ -69,10 +108,10 @@ jobs:
         run: |
           echo "$(versionize changelog)" > latest_changelog.md
           cat latest_changelog.md
-            
+
       - name: Publish
         if: steps.versionize.outcome == 'success'
-        run: dotnet publish '.\FPPSongInfo\FPPSongInfo.csproj' -p:PublishProfile=FolderProfile.pubxml
+        run: dotnet publish FPPSongInfo/FPPSongInfo.csproj -p:PublishProfile=FolderProfile.pubxml
 
       - name: Zip files
         if: steps.versionize.outcome == 'success'
@@ -80,15 +119,15 @@ jobs:
         run: |
           cd "FPPSongInfo/publish"
           zip -r ../../FPPSongInfo.zip "FPPSongInfo"
-          
+
       - name: Upload artifact
         id: artifact-upload-step
         if: steps.versionize.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
           name: "FPP Song Info"
-          path:  "FPPSongInfo.zip"
-          
+          path: "FPPSongInfo.zip"
+
       - name: Download Artifact
         if: steps.versionize.outcome == 'success'
         uses: actions/download-artifact@v8
@@ -100,9 +139,9 @@ jobs:
         if: steps.versionize.outcome == 'success'
         uses: softprops/action-gh-release@v3
         with:
-          files: downloaded-artifact/*.* # Path to the downloaded artifact
+          files: downloaded-artifact/*.*
           body_path: latest_changelog.md
-          name: "Release ${{env.VERSION}}"
-          tag_name: ${{env.VERSION}}
+          name: "Release ${{ env.VERSION }}"
+          tag_name: ${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
