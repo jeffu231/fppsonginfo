@@ -4,12 +4,14 @@ using FPPSongInfo.Service;
 
 namespace FPPSongInfo;
 
-public static class ConfigureServiceCollectionExtension
+internal static class ConfigureServiceCollectionExtension
 {
-    public static IServiceCollection ConfigureServicesFromConfig(this IServiceCollection services,
+    internal static IServiceCollection ConfigureServicesFromConfig(this IServiceCollection services,
         IConfiguration config)
     {
-        Console.WriteLine("ConfigureServicesFromConfig");
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(config);
+
         services.AddOptions<MqttOptions>()
             .BindConfiguration(MqttOptions.SectionName)
             .ValidateDataAnnotations()

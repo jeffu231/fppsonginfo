@@ -51,7 +51,7 @@ internal sealed class FppConsumerService(
             {
                 _logger.LogWarning(exception, "FPP subscription for topic {Topic} will retry after reconnect", subscriptionTopic);
             }
-            
+
             await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
             {
                 await ProcessMessageAsync(message, songTopic, stoppingToken);

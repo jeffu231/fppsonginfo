@@ -6,7 +6,7 @@
 				<ImplicitUsings>enable</ImplicitUsings>
 				<Nullable>enable</Nullable>
 				<RootNamespace>FPPSongInfo</RootNamespace>
-				<OutputType>exe</OutputType>
+				<InternalsVisibleTo>FPPSongInfo.Tests</InternalsVisibleTo>
 				<PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
 				<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 				<PlatformTarget>x64</PlatformTarget>

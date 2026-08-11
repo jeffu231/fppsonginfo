@@ -50,7 +50,7 @@ internal sealed class RadioAutomationConsumerService(
             {
                 _logger.LogWarning(exception, "Radio automation subscription for topic {Topic} will retry after reconnect", subscriptionTopic);
             }
-           
+
             await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
             {
                 await ProcessMessageAsync(message, songInfoTopic, stoppingToken);
