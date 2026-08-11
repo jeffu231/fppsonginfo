@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using FPPSongInfo.Configuration;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
+using MQTTnet.Exceptions;
 using IMqttClient = FPPSongInfo.Mqtt.IMqttClient;
 
 namespace FPPSongInfo.Service;
@@ -42,8 +43,15 @@ internal sealed class FppConsumerService(
         try
         {
             _logger.LogDebug("Subscribing to FPP topic {Topic}", subscriptionTopic);
-            await _mqttClient.SubscribeAsync(subscriptionTopic, stoppingToken);
-
+            try
+            {
+                await _mqttClient.SubscribeAsync(subscriptionTopic, stoppingToken);
+            }
+            catch (Exception exception) when (exception is MqttClientNotConnectedException or MqttCommunicationException)
+            {
+                _logger.LogWarning(exception, "FPP subscription for topic {Topic} will retry after reconnect", subscriptionTopic);
+            }
+            
             await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
             {
                 await ProcessMessageAsync(message, songTopic, stoppingToken);
@@ -63,7 +71,11 @@ internal sealed class FppConsumerService(
             {
                 await _mqttClient.UnsubscribeAsync(subscriptionTopic, CancellationToken.None);
             }
-            catch (Exception exception)
+            catch (MqttClientNotConnectedException exception)
+            {
+                _logger.LogDebug(exception, "FPP topic {Topic} was already disconnected during unsubscribe", subscriptionTopic);
+            }
+            catch (MqttCommunicationException exception)
             {
                 _logger.LogError(exception, "Could not unsubscribe from FPP topic {Topic}", subscriptionTopic);
             }
@@ -102,7 +114,14 @@ internal sealed class FppConsumerService(
             return;
         }
 
-        await _songInfoWriter.UpdateSongInfoAsync(new SongInfo(_artist, _title), cancellationToken);
-        _logger.LogDebug("Updated FPP song info from topic {Topic}", topic);
+        try
+        {
+            await _songInfoWriter.UpdateSongInfoAsync(new SongInfo(_artist, _title), cancellationToken);
+            _logger.LogDebug("Updated FPP song info from topic {Topic}", topic);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(exception, "Could not write FPP song info received on topic {Topic}", topic);
+        }
     }
 }

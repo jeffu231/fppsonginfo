@@ -122,7 +122,7 @@ internal sealed class SongInfoWriter(
         {
             File.Delete(temporaryPath);
         }
-        catch (IOException exception)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             _logger.LogWarning(exception, "Could not remove temporary song info file {Path}", temporaryPath);
         }

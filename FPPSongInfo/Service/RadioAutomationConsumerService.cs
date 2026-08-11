@@ -4,6 +4,7 @@ using System.Threading.Channels;
 using FPPSongInfo.Configuration;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
+using MQTTnet.Exceptions;
 using IMqttClient = FPPSongInfo.Mqtt.IMqttClient;
 
 namespace FPPSongInfo.Service;
@@ -41,8 +42,15 @@ internal sealed class RadioAutomationConsumerService(
         try
         {
             _logger.LogDebug("Subscribing to radio automation topic {Topic}", subscriptionTopic);
-            await _mqttClient.SubscribeAsync(subscriptionTopic, stoppingToken);
-
+            try
+            {
+                await _mqttClient.SubscribeAsync(subscriptionTopic, stoppingToken);
+            }
+            catch (Exception exception) when (exception is MqttClientNotConnectedException or MqttCommunicationException)
+            {
+                _logger.LogWarning(exception, "Radio automation subscription for topic {Topic} will retry after reconnect", subscriptionTopic);
+            }
+           
             await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
             {
                 await ProcessMessageAsync(message, songInfoTopic, stoppingToken);
@@ -62,7 +70,11 @@ internal sealed class RadioAutomationConsumerService(
             {
                 await _mqttClient.UnsubscribeAsync(subscriptionTopic, CancellationToken.None);
             }
-            catch (Exception exception)
+            catch (MqttClientNotConnectedException exception)
+            {
+                _logger.LogDebug(exception, "Radio automation topic {Topic} was already disconnected during unsubscribe", subscriptionTopic);
+            }
+            catch (MqttCommunicationException exception)
             {
                 _logger.LogError(exception, "Could not unsubscribe from radio automation topic {Topic}", subscriptionTopic);
             }
@@ -114,7 +126,14 @@ internal sealed class RadioAutomationConsumerService(
             return;
         }
 
-        await _songInfoWriter.UpdateSongInfoAsync(songInfo, cancellationToken);
-        _logger.LogDebug("Updated radio automation song info from topic {Topic}", songInfoTopic);
+        try
+        {
+            await _songInfoWriter.UpdateSongInfoAsync(songInfo, cancellationToken);
+            _logger.LogDebug("Updated radio automation song info from topic {Topic}", songInfoTopic);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(exception, "Could not write radio automation song info received on topic {Topic}", songInfoTopic);
+        }
     }
 }
