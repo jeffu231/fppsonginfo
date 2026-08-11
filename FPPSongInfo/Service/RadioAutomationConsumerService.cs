@@ -45,7 +45,7 @@ internal sealed class RadioAutomationConsumerService(
 
             await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
             {
-                await ProcessMessageAsync(message, songInfoTopic);
+                await ProcessMessageAsync(message, songInfoTopic, stoppingToken);
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -80,7 +80,10 @@ internal sealed class RadioAutomationConsumerService(
         return Task.CompletedTask;
     }
 
-    private async Task ProcessMessageAsync(MqttApplicationMessageReceivedEventArgs message, string songInfoTopic)
+    private async Task ProcessMessageAsync(
+        MqttApplicationMessageReceivedEventArgs message,
+        string songInfoTopic,
+        CancellationToken cancellationToken)
     {
         if (!string.Equals(message.ApplicationMessage.Topic, songInfoTopic, StringComparison.Ordinal))
         {
@@ -111,7 +114,7 @@ internal sealed class RadioAutomationConsumerService(
             return;
         }
 
-        await _songInfoWriter.UpdateSongInfo(songInfo.Artist, songInfo.Title);
+        await _songInfoWriter.UpdateSongInfoAsync(songInfo, cancellationToken);
         _logger.LogDebug("Updated radio automation song info from topic {Topic}", songInfoTopic);
     }
 }

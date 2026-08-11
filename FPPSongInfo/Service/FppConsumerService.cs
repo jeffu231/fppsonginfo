@@ -46,7 +46,7 @@ internal sealed class FppConsumerService(
 
             await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
             {
-                await ProcessMessageAsync(message, songTopic);
+                await ProcessMessageAsync(message, songTopic, stoppingToken);
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -81,7 +81,10 @@ internal sealed class FppConsumerService(
         return Task.CompletedTask;
     }
 
-    private async Task ProcessMessageAsync(MqttApplicationMessageReceivedEventArgs message, string songTopic)
+    private async Task ProcessMessageAsync(
+        MqttApplicationMessageReceivedEventArgs message,
+        string songTopic,
+        CancellationToken cancellationToken)
     {
         var topic = message.ApplicationMessage.Topic;
         var payload = Encoding.UTF8.GetString(message.ApplicationMessage.PayloadSegment);
@@ -99,7 +102,7 @@ internal sealed class FppConsumerService(
             return;
         }
 
-        await _songInfoWriter.UpdateSongInfo(_artist, _title);
+        await _songInfoWriter.UpdateSongInfoAsync(new SongInfo(_artist, _title), cancellationToken);
         _logger.LogDebug("Updated FPP song info from topic {Topic}", topic);
     }
 }

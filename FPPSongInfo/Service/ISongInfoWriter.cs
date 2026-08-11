@@ -1,6 +1,6 @@
 namespace FPPSongInfo.Service;
 
-public interface ISongInfoWriter
+internal interface ISongInfoWriter
 {
-    Task UpdateSongInfo(string artist, string title);
+    Task UpdateSongInfoAsync(SongInfo songInfo, CancellationToken cancellationToken);
 }
