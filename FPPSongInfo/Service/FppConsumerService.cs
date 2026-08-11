@@ -33,7 +33,7 @@ internal sealed class FppConsumerService:BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogDebug("FPP Consumer Service Execute");
-        _mqttClient.OnMessageReceived += MqttClientOnOnMessageReceived;
+        _mqttClient.MessageReceived += MqttClientOnMessageReceivedAsync;
         var songTopic = _mqttOptions.RootTopic + _fppOptions.SongTopic + "/#";
         _logger.LogDebug("Subscribing to Topic {Topic}", songTopic);
         while (!_mqttClient.IsConnected)
@@ -42,12 +42,12 @@ internal sealed class FppConsumerService:BackgroundService
             _logger.LogDebug("Waiting for MQTT to Connect");
         }
         _logger.LogDebug("MQTT is Connected");
-        await _mqttClient.SubscribeAsync(songTopic);
+        await _mqttClient.SubscribeAsync(songTopic, stoppingToken);
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(1000, stoppingToken);
         }
-        await _mqttClient.UnsubscribeAsync(songTopic);
+        await _mqttClient.UnsubscribeAsync(songTopic, stoppingToken);
         _logger.LogDebug("FPP Consumer Service execute finishing");
     }
     
@@ -58,7 +58,7 @@ internal sealed class FppConsumerService:BackgroundService
         await base.StopAsync(stoppingToken);
     }
 
-    private async void MqttClientOnOnMessageReceived(object? sender, MqttApplicationMessageReceivedEventArgs e)
+    private async Task MqttClientOnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs e)
     {
         _logger.LogDebug("Message received on Topic {Topic}", e.ApplicationMessage.Topic);
         if (e.ApplicationMessage.Topic.EndsWith("artist"))

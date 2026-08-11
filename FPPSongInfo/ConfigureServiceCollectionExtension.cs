@@ -26,10 +26,16 @@ public static class ConfigureServiceCollectionExtension
             .BindConfiguration(OutputOptions.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services.AddSingleton<IMqttClient, MqttClient>();
         services.AddSingleton<ISongInfoWriter, SongInfoWriter>();
-        services.AddHostedService<FppConsumerService>();
-        services.AddHostedService<RadioAutomationConsumerService>();
+
+        var mqttEnabled = config.GetSection(MqttOptions.SectionName).Get<MqttOptions>()?.Enabled == true;
+        if (mqttEnabled)
+        {
+            services.AddSingleton<IMqttClient, MqttClient>();
+            services.AddHostedService<MqttConnectionHostedService>();
+            services.AddHostedService<FppConsumerService>();
+            services.AddHostedService<RadioAutomationConsumerService>();
+        }
 
         return services;
     }

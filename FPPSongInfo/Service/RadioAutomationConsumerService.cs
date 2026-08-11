@@ -18,7 +18,7 @@ internal sealed class RadioAutomationConsumerService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogDebug("Radio Automation Consumer Service Execute");
-        mqttClient.OnMessageReceived += MqttClientOnOnMessageReceived;
+        mqttClient.MessageReceived += MqttClientOnMessageReceivedAsync;
         var songTopic = mqttOptions.Value.RootTopic + radioAutomationOptions.Value.SongTopic + "/#";
         logger.LogDebug("Subscribing to Topic {Topic}", songTopic);
         while (!mqttClient.IsConnected)
@@ -27,12 +27,12 @@ internal sealed class RadioAutomationConsumerService(
             logger.LogDebug("Waiting for MQTT to Connect");
         }
         logger.LogDebug("MQTT is Connected");
-        await mqttClient.SubscribeAsync(songTopic);
+        await mqttClient.SubscribeAsync(songTopic, stoppingToken);
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(1000, stoppingToken);
         }
-        await mqttClient.UnsubscribeAsync(songTopic);
+        await mqttClient.UnsubscribeAsync(songTopic, stoppingToken);
         logger.LogDebug("FPP Consumer Service execute finishing");
     }
     public override async Task StopAsync(CancellationToken stoppingToken)
@@ -42,7 +42,7 @@ internal sealed class RadioAutomationConsumerService(
         await base.StopAsync(stoppingToken);
     }
 
-    private async void MqttClientOnOnMessageReceived(object? sender, MqttApplicationMessageReceivedEventArgs e)
+    private async Task MqttClientOnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs e)
     {
         logger.LogDebug("Message received on Topic {Topic}", e.ApplicationMessage.Topic);
         if (e.ApplicationMessage.Topic.EndsWith("songinfo"))
