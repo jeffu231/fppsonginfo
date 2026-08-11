@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPPSongInfo", "FPPSongInfo\FPPSongInfo.csproj", "{C9B5556F-1E95-4448-9AD0-DF001AF96CC0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPPSongInfo.Tests", "FPPSongInfo.Tests\FPPSongInfo.Tests.csproj", "{B5AE9C0E-7AA0-4AE4-9C72-6F385D3E2F68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{C9B5556F-1E95-4448-9AD0-DF001AF96CC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9B5556F-1E95-4448-9AD0-DF001AF96CC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9B5556F-1E95-4448-9AD0-DF001AF96CC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5AE9C0E-7AA0-4AE4-9C72-6F385D3E2F68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5AE9C0E-7AA0-4AE4-9C72-6F385D3E2F68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5AE9C0E-7AA0-4AE4-9C72-6F385D3E2F68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5AE9C0E-7AA0-4AE4-9C72-6F385D3E2F68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

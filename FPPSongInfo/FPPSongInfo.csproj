@@ -9,7 +9,6 @@
 				<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 				<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 				<RootNamespace>FPPSongInfo</RootNamespace>
-				<InternalsVisibleTo>FPPSongInfo.Tests</InternalsVisibleTo>
 				<PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
 				<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 				<PlatformTarget>x64</PlatformTarget>
@@ -20,6 +19,7 @@
 		</PropertyGroup>
 
 		<ItemGroup>
+				<InternalsVisibleTo Include="FPPSongInfo.Tests" />
 				<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
 				<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
 				<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.10" />
