@@ -20,14 +20,14 @@ jobs:
       contents: write
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.x'
+          global-json-file: global.json
 
       - name: Display dotnet version
         run: dotnet --version
@@ -84,21 +84,21 @@ jobs:
       - name: Upload artifact
         id: artifact-upload-step
         if: steps.versionize.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "FPP Song Info"
           path:  "FPPSongInfo.zip"
           
       - name: Download Artifact
         if: steps.versionize.outcome == 'success'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ steps.artifact-upload-step.outputs.artifact-id }}
           path: downloaded-artifact
 
       - name: Create Release
         if: steps.versionize.outcome == 'success'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: downloaded-artifact/*.* # Path to the downloaded artifact
           body_path: latest_changelog.md
