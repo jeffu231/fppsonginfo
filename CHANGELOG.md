@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.2.0"></a>
+## [1.2.0](https://www.github.com/jeffu231/fppsonginfo/releases/tag/v1.2.0) (2026-08-11)
+
+### Features
+
+* **config:** validate service options at startup ([1e52fad](https://www.github.com/jeffu231/fppsonginfo/commit/1e52fad705f0969d214c5d4521d1ba2ea02f9d3d))
+
+### Bug Fixes
+
+* **consumers:** serialize MQTT message processing ([352cd8e](https://www.github.com/jeffu231/fppsonginfo/commit/352cd8e75c1f27a0220eaf8cadc3b83cd3520184))
+* **lifecycle:** unify cancellation and failure handling ([45386d7](https://www.github.com/jeffu231/fppsonginfo/commit/45386d78cd092fee59b8ccad4f3ee9eb9970ae6e))
+* **output:** serialize compatible song file writes ([680932e](https://www.github.com/jeffu231/fppsonginfo/commit/680932e7f8197509d54d4883ff3d47ac63ea5229))
+
+### Continuous Integration
+
+* enforce build tests and formatting ([fd8d155](https://www.github.com/jeffu231/fppsonginfo/commit/fd8d155e711e95cbf43599fcbb0e02221a35c3d9))
+
+### Documentation
+
+* add Windows service remediation plan ([d40c867](https://www.github.com/jeffu231/fppsonginfo/commit/d40c8677c51f1fa1405580fec09b1fe2c7889e1a))
+* document deployment configuration ([599e780](https://www.github.com/jeffu231/fppsonginfo/commit/599e78053312c39a0a1c251b12d6f44ee919c978))
+* **AI:** Add agent and skill info ([d575247](https://www.github.com/jeffu231/fppsonginfo/commit/d5752474c2c38e5b43a7c4b8b380ff88fb0dbb9b))
+
 <a name="1.1.0"></a>
 ## [1.1.0](https://www.github.com/jeffu231/fppsonginfo/releases/tag/v1.1.0) (2026-05-06)
 
