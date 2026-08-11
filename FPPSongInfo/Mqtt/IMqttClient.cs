@@ -2,15 +2,19 @@ using MQTTnet.Client;
 
 namespace FPPSongInfo.Mqtt;
 
-public interface IMqttClient
+internal interface IMqttClient : IAsyncDisposable
 {
     bool IsConnected { get; }
-    Task<bool> PublishAsync(string topic, string message);
-    
-    Task<bool> SubscribeAsync(string topic);
-    
-    Task<bool> UnsubscribeAsync(string topic);
-    
-    event EventHandler<MqttApplicationMessageReceivedEventArgs> OnMessageReceived;
-    
+    Task<bool> PublishAsync(string topic, string message, CancellationToken cancellationToken);
+
+    Task StartAsync(CancellationToken cancellationToken);
+
+    Task StopAsync(CancellationToken cancellationToken);
+
+    Task SubscribeAsync(string topic, CancellationToken cancellationToken);
+
+    Task UnsubscribeAsync(string topic, CancellationToken cancellationToken);
+
+    event Func<MqttApplicationMessageReceivedEventArgs, Task>? MessageReceived;
+
 }

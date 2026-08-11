@@ -1,38 +1,132 @@
+using System.Text;
+using FPPSongInfo.Configuration;
+using Microsoft.Extensions.Options;
+
 namespace FPPSongInfo.Service;
 
-public class SongInfoWriter(IConfiguration configuration, ILogger<SongInfoWriter> logger) : ISongInfoWriter
+internal sealed class SongInfoWriter(
+    IOptions<OutputOptions> outputOptions,
+    ILogger<SongInfoWriter> logger)
+    : ISongInfoWriter, IDisposable
 {
-    public async Task UpdateSongInfo(string artist, string title)
+    private const int ReplaceRetryCount = 3;
+    private static readonly UTF8Encoding Utf8WithoutBom = new(false);
+    private readonly ILogger<SongInfoWriter> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly OutputOptions _outputOptions = outputOptions?.Value ?? throw new ArgumentNullException(nameof(outputOptions));
+    private readonly SemaphoreSlim _writeLock = new(1, 1);
+
+    public async Task UpdateSongInfoAsync(SongInfo songInfo, CancellationToken cancellationToken)
     {
-        FileStream? fs = null;
+        ArgumentNullException.ThrowIfNull(songInfo);
+
+        await _writeLock.WaitAsync(cancellationToken);
         try
         {
-            var filePath = configuration.GetValue<string>("Output:FilePath");
-            var fileName = configuration.GetValue<string>("Output:FileName");
-            if (!string.IsNullOrEmpty(filePath) && !string.IsNullOrEmpty(fileName))
+            var destinationPath = Path.Combine(_outputOptions.FilePath, _outputOptions.FileName);
+            var temporaryPath = Path.Combine(
+                _outputOptions.FilePath,
+                $".{_outputOptions.FileName}.{Guid.NewGuid():N}.tmp");
+            var content = CreateSongInfoContent(songInfo);
+
+            Directory.CreateDirectory(_outputOptions.FilePath);
+
+            try
             {
-                if (!Directory.Exists(filePath))
+                await WriteTextAsync(temporaryPath, FileMode.CreateNew, FileShare.None, content, cancellationToken);
+
+                if (await TryReplaceAsync(temporaryPath, destinationPath, cancellationToken))
                 {
-                    Directory.CreateDirectory(filePath);
+                    _logger.LogDebug("Atomically wrote song info to {Path}", destinationPath);
+                    return;
                 }
 
-                var path = Path.Combine(filePath, fileName);
-                logger.LogDebug("Writing song info to path {Path} for {Artist} - {Title}", path, artist, title);
-                fs = File.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-                await using TextWriter tw = new StreamWriter(fs);
-                await tw.WriteLineAsync($"{artist}{(string.IsNullOrEmpty(artist) ? string.Empty : " - ")}{title}");
+                _logger.LogWarning(
+                    "Falling back to a compatible in-place song info write for {Path}",
+                    destinationPath);
+                await WriteTextAsync(destinationPath, FileMode.Create, FileShare.ReadWrite, content, cancellationToken);
             }
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Unable to write song file");
+            finally
+            {
+                TryDeleteTemporaryFile(temporaryPath);
+            }
         }
         finally
         {
-            if (fs != null)
-            {
-                await fs.DisposeAsync();
-            }
+            _writeLock.Release();
         }
     }
+
+    private async Task<bool> TryReplaceAsync(
+        string temporaryPath,
+        string destinationPath,
+        CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; attempt <= ReplaceRetryCount; attempt++)
+        {
+            try
+            {
+                File.Move(temporaryPath, destinationPath, true);
+                return true;
+            }
+            catch (IOException exception) when (attempt < ReplaceRetryCount)
+            {
+                var delay = TimeSpan.FromMilliseconds(50 * attempt);
+                _logger.LogDebug(
+                    exception,
+                    "Could not atomically replace song info file {Path}; retrying in {Delay}",
+                    destinationPath,
+                    delay);
+                await Task.Delay(delay, cancellationToken);
+            }
+            catch (IOException exception)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Could not atomically replace song info file {Path} after {Attempts} attempts",
+                    destinationPath,
+                    ReplaceRetryCount);
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private static string CreateSongInfoContent(SongInfo songInfo) =>
+        $"{songInfo.Artist}{(string.IsNullOrEmpty(songInfo.Artist) ? string.Empty : " - ")}{songInfo.Title}{Environment.NewLine}";
+
+    private static async Task WriteTextAsync(
+        string path,
+        FileMode mode,
+        FileShare share,
+        string content,
+        CancellationToken cancellationToken)
+    {
+        await using var fileStream = new FileStream(
+            path,
+            mode,
+            FileAccess.Write,
+            share,
+            bufferSize: 4096,
+            FileOptions.Asynchronous);
+        await using var writer = new StreamWriter(fileStream, Utf8WithoutBom, leaveOpen: true);
+
+        await writer.WriteAsync(content.AsMemory(), cancellationToken);
+        await writer.FlushAsync(cancellationToken);
+        await fileStream.FlushAsync(cancellationToken);
+    }
+
+    private void TryDeleteTemporaryFile(string temporaryPath)
+    {
+        try
+        {
+            File.Delete(temporaryPath);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(exception, "Could not remove temporary song info file {Path}", temporaryPath);
+        }
+    }
+
+    public void Dispose() => _writeLock.Dispose();
 }
