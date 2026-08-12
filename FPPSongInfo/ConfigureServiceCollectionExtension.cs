@@ -32,7 +32,14 @@ internal static class ConfigureServiceCollectionExtension
             .BindConfiguration(RdsOptions.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services.AddSingleton<ISongInfoWriter, SongInfoWriter>();
+        var outputEnabled = config.GetSection(OutputOptions.SectionName).Get<OutputOptions>()?.Enabled != false;
+        if (outputEnabled)
+        {
+            services.AddSingleton<FileSongInfoSink>();
+            services.AddSingleton<ISongInfoSink>(serviceProvider => serviceProvider.GetRequiredService<FileSongInfoSink>());
+        }
+
+        services.AddSingleton<ISongInfoPublisher, SongInfoPublisher>();
 
         var mqttEnabled = config.GetSection(MqttOptions.SectionName).Get<MqttOptions>()?.Enabled == true;
         if (mqttEnabled)

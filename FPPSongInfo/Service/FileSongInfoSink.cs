@@ -4,18 +4,18 @@ using Microsoft.Extensions.Options;
 
 namespace FPPSongInfo.Service;
 
-internal sealed class SongInfoWriter(
+internal sealed class FileSongInfoSink(
     IOptions<OutputOptions> outputOptions,
-    ILogger<SongInfoWriter> logger)
-    : ISongInfoWriter, IDisposable
+    ILogger<FileSongInfoSink> logger)
+    : ISongInfoSink, IDisposable
 {
     private const int ReplaceRetryCount = 3;
     private static readonly UTF8Encoding Utf8WithoutBom = new(false);
-    private readonly ILogger<SongInfoWriter> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger<FileSongInfoSink> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly OutputOptions _outputOptions = outputOptions?.Value ?? throw new ArgumentNullException(nameof(outputOptions));
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
-    public async Task UpdateSongInfoAsync(SongInfo songInfo, CancellationToken cancellationToken)
+    public async Task UpdateAsync(SongInfo songInfo, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(songInfo);
 
@@ -93,7 +93,7 @@ internal sealed class SongInfoWriter(
     }
 
     private static string CreateSongInfoContent(SongInfo songInfo) =>
-        $"{songInfo.Artist}{(string.IsNullOrEmpty(songInfo.Artist) ? string.Empty : " - ")}{songInfo.Title}{Environment.NewLine}";
+        $"{songInfo.Artist.Trim()} - {songInfo.Title.Trim()}{Environment.NewLine}";
 
     private static async Task WriteTextAsync(
         string path,
