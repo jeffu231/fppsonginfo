@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text;
+using FPPSongInfo.Rds;
 
 namespace FPPSongInfo.Configuration;
 
@@ -107,7 +107,7 @@ internal sealed class RdsOptions : IValidatableObject
 
     private static ValidationResult Error(string message, string memberName) => new(message, [memberName]);
 
-    private static int GetEncodedLength(string? value) => Encoding.Latin1.GetByteCount(value ?? string.Empty);
+    private static int GetEncodedLength(string? value) => RdsTextEncoder.Encode(value, int.MaxValue).Length;
 
     private static bool IsWithinHardwareRange(TimeSpan value, double secondsPerRawValue, int maximumRawValue) =>
         value >= TimeSpan.Zero && value <= TimeSpan.FromSeconds(maximumRawValue * secondsPerRawValue);
