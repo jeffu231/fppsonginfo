@@ -28,6 +28,10 @@ internal static class ConfigureServiceCollectionExtension
             .BindConfiguration(OutputOptions.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
+        services.AddOptions<RdsOptions>()
+            .BindConfiguration(RdsOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddSingleton<ISongInfoWriter, SongInfoWriter>();
 
         var mqttEnabled = config.GetSection(MqttOptions.SectionName).Get<MqttOptions>()?.Enabled == true;
