@@ -8,6 +8,8 @@ internal sealed class RecordingMrds192DeviceClient : IMrds192DeviceClient
 
     public int InitializationCount { get; private set; }
 
+    public int RemainingInitializationFailures { get; set; }
+
     public IReadOnlyList<string> RadioTexts
     {
         get
@@ -22,6 +24,12 @@ internal sealed class RecordingMrds192DeviceClient : IMrds192DeviceClient
     public Task InitializeAsync(CancellationToken cancellationToken)
     {
         InitializationCount++;
+        if (RemainingInitializationFailures > 0)
+        {
+            RemainingInitializationFailures--;
+            return Task.FromException(new IOException("Simulated initialization failure."));
+        }
+
         return Task.CompletedTask;
     }
 

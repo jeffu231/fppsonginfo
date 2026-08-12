@@ -1,5 +1,6 @@
 using System.IO.Ports;
 using FPPSongInfo.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace FPPSongInfo.Rds;
 
@@ -14,6 +15,11 @@ internal sealed class SerialControlLineMrds192Bus : IMrds192Bus
     private readonly SemaphoreSlim _transactionLock = new(1, 1);
     private readonly Mrds192BusTiming _timing;
     private bool _disposed;
+
+    public SerialControlLineMrds192Bus(IOptions<RdsOptions> rdsOptions)
+        : this(rdsOptions?.Value ?? throw new ArgumentNullException(nameof(rdsOptions)))
+    {
+    }
 
     internal SerialControlLineMrds192Bus(RdsOptions options)
     {

@@ -1,4 +1,5 @@
 using FPPSongInfo.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace FPPSongInfo.Rds;
 
@@ -21,6 +22,11 @@ internal sealed class Mrds192DeviceClient : IMrds192DeviceClient
     private readonly TimeSpan _bufferedProgramServiceWriteDelay;
     private readonly RdsOptions _options;
     private bool _lastSuccessfullyWrittenTypeB;
+
+    public Mrds192DeviceClient(IMrds192Bus bus, IOptions<RdsOptions> rdsOptions)
+        : this(bus, rdsOptions?.Value ?? throw new ArgumentNullException(nameof(rdsOptions)))
+    {
+    }
 
     internal Mrds192DeviceClient(IMrds192Bus bus, RdsOptions options)
         : this(bus, options, BufferedProgramServiceWriteDelay)
