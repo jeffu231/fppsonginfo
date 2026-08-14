@@ -12,7 +12,7 @@
 				<PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
 				<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 				<PlatformTarget>x64</PlatformTarget>
-				<Version>1.2.0</Version>
+				<Version>1.3.0</Version>
 				<RepositoryUrl>https://github.com/jeffu231/FPPSongInfo</RepositoryUrl>
 				<Description>A consumer that listens for MQTT messages about the playing media and writes it to a simple file.</Description>
 				<Authors>Jeff Uchitjil</Authors>

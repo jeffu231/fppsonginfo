@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.3.0"></a>
+## [1.3.0](https://www.github.com/jeffu231/fppsonginfo/releases/tag/v1.3.0) (2026-08-14)
+
+### Features
+
+* **config:** add validated RDS output settings ([2f9e034](https://www.github.com/jeffu231/fppsonginfo/commit/2f9e034dee3fde00bf904a5d4cf3e46755ed792a))
+* **config:** add validated RDS output settings ([b03a857](https://www.github.com/jeffu231/fppsonginfo/commit/b03a857ecf4e20dcb49994edbd725fc186f2aeac))
+* **rds:** add MRDS text and timing conversion ([4b4875a](https://www.github.com/jeffu231/fppsonginfo/commit/4b4875ad5dff20e22ce9d0521347cc5aa7a4f392))
+* **rds:** add resilient RadioText updater service ([7f0f435](https://www.github.com/jeffu231/fppsonginfo/commit/7f0f43565fe928e1d76d0c833e85d00854073037))
+* **rds:** configure MRDS192 volatile registers ([84fcd46](https://www.github.com/jeffu231/fppsonginfo/commit/84fcd46120112831b799f9663fc6c7f506fe7f76))
+* **rds:** implement COM control-line I2C transport ([265b062](https://www.github.com/jeffu231/fppsonginfo/commit/265b062f4dcb4998f84a1dee5c8e62bc532cee6e))
+
+### Bug Fixes
+
+* **rds:** harden COM control-line updates ([88b221e](https://www.github.com/jeffu231/fppsonginfo/commit/88b221eff181bc50c1abd756e8b098d9f04a3b7f))
+
+### Continuous Integration
+
+* **action:** Bump setup-dotnet to latest ([d753e4a](https://www.github.com/jeffu231/fppsonginfo/commit/d753e4afe57f9dfd4c23c4463877926642ac2df9))
+
+### Documentation
+
+* Move the minirds document to the references folder ([271aa55](https://www.github.com/jeffu231/fppsonginfo/commit/271aa5502976053b4e4d9c4af80f57f058aa7fd1))
+* **RDS:** Add initial spec and plan to add RDS feature ([b928b9d](https://www.github.com/jeffu231/fppsonginfo/commit/b928b9dc595e307be9d1d42dded58d38539d8068))
+
 <a name="1.2.0"></a>
 ## [1.2.0](https://www.github.com/jeffu231/fppsonginfo/releases/tag/v1.2.0) (2026-08-11)
 
