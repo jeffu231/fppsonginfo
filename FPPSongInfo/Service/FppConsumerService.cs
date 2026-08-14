@@ -13,14 +13,14 @@ internal sealed class FppConsumerService(
     IOptions<MqttOptions> mqttOptions,
     IOptions<FppOptions> fppOptions,
     ILogger<FppConsumerService> logger,
-    ISongInfoWriter songInfoWriter)
+    ISongInfoPublisher songInfoPublisher)
     : BackgroundService
 {
     private readonly FppOptions _fppOptions = fppOptions?.Value ?? throw new ArgumentNullException(nameof(fppOptions));
     private readonly ILogger<FppConsumerService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IMqttClient _mqttClient = mqttClient ?? throw new ArgumentNullException(nameof(mqttClient));
     private readonly MqttOptions _mqttOptions = mqttOptions?.Value ?? throw new ArgumentNullException(nameof(mqttOptions));
-    private readonly ISongInfoWriter _songInfoWriter = songInfoWriter ?? throw new ArgumentNullException(nameof(songInfoWriter));
+    private readonly ISongInfoPublisher _songInfoPublisher = songInfoPublisher ?? throw new ArgumentNullException(nameof(songInfoPublisher));
     private string _artist = string.Empty;
     private ChannelWriter<MqttApplicationMessageReceivedEventArgs>? _messageWriter;
     private string _title = string.Empty;
@@ -114,14 +114,14 @@ internal sealed class FppConsumerService(
             return;
         }
 
-        try
+        if (string.IsNullOrWhiteSpace(_artist) || string.IsNullOrWhiteSpace(_title))
         {
-            await _songInfoWriter.UpdateSongInfoAsync(new SongInfo(_artist, _title), cancellationToken);
-            _logger.LogDebug("Updated FPP song info from topic {Topic}", topic);
+            return;
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            _logger.LogError(exception, "Could not write FPP song info received on topic {Topic}", topic);
-        }
+
+        await _songInfoPublisher.PublishAsync(
+            new SongInfo(_artist.Trim(), _title.Trim()),
+            cancellationToken);
+        _logger.LogDebug("Published FPP song information from topic {Topic}", topic);
     }
 }

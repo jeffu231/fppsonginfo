@@ -14,7 +14,7 @@ internal sealed class RadioAutomationConsumerService(
     IOptions<MqttOptions> mqttOptions,
     IOptions<RadioAutomationOptions> radioAutomationOptions,
     ILogger<RadioAutomationConsumerService> logger,
-    ISongInfoWriter songInfoWriter)
+    ISongInfoPublisher songInfoPublisher)
     : BackgroundService
 {
     private readonly ILogger<RadioAutomationConsumerService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -22,7 +22,7 @@ internal sealed class RadioAutomationConsumerService(
     private readonly IMqttClient _mqttClient = mqttClient ?? throw new ArgumentNullException(nameof(mqttClient));
     private readonly MqttOptions _mqttOptions = mqttOptions?.Value ?? throw new ArgumentNullException(nameof(mqttOptions));
     private readonly RadioAutomationOptions _radioAutomationOptions = radioAutomationOptions?.Value ?? throw new ArgumentNullException(nameof(radioAutomationOptions));
-    private readonly ISongInfoWriter _songInfoWriter = songInfoWriter ?? throw new ArgumentNullException(nameof(songInfoWriter));
+    private readonly ISongInfoPublisher _songInfoPublisher = songInfoPublisher ?? throw new ArgumentNullException(nameof(songInfoPublisher));
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -126,14 +126,15 @@ internal sealed class RadioAutomationConsumerService(
             return;
         }
 
-        try
+        if (string.IsNullOrWhiteSpace(songInfo.Artist) || string.IsNullOrWhiteSpace(songInfo.Title))
         {
-            await _songInfoWriter.UpdateSongInfoAsync(songInfo, cancellationToken);
-            _logger.LogDebug("Updated radio automation song info from topic {Topic}", songInfoTopic);
+            _logger.LogWarning("Ignoring incomplete radio automation payload on topic {Topic}", songInfoTopic);
+            return;
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            _logger.LogError(exception, "Could not write radio automation song info received on topic {Topic}", songInfoTopic);
-        }
+
+        await _songInfoPublisher.PublishAsync(
+            new SongInfo(songInfo.Artist.Trim(), songInfo.Title.Trim()),
+            cancellationToken);
+        _logger.LogDebug("Published radio automation song information from topic {Topic}", songInfoTopic);
     }
 }

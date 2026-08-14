@@ -1,6 +1,6 @@
 namespace FPPSongInfo.Tests;
 
-internal sealed class RecordingSongInfoWriter : ISongInfoWriter
+internal sealed class RecordingSongInfoSink : ISongInfoSink
 {
     private readonly List<SongInfo> _updates = [];
 
@@ -15,7 +15,7 @@ internal sealed class RecordingSongInfoWriter : ISongInfoWriter
         }
     }
 
-    public Task UpdateSongInfoAsync(SongInfo songInfo, CancellationToken cancellationToken)
+    public Task UpdateAsync(SongInfo songInfo, CancellationToken cancellationToken)
     {
         lock (_updates)
         {
