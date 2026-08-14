@@ -37,7 +37,7 @@ public sealed class Mrds192DeviceClientTests
     }
 
     [Fact]
-    public async Task ChangesRadioTextTypeOnlyAfterBothWritesSucceedAsync()
+    public async Task DisablesRadioTextUntilTheNewBufferAndTypeAreWrittenAsync()
     {
         var bus = new RecordingMrds192Bus([[0], [0x02]]);
         var client = CreateClient(bus);
@@ -47,6 +47,8 @@ public sealed class Mrds192DeviceClientTests
         await Assert.ThrowsAsync<IOException>(() => client.WriteRadioTextAsync("Artist - Title", CancellationToken.None));
         await client.WriteRadioTextAsync("Artist - Title", CancellationToken.None);
 
+        Assert.Equal(0x1f, bus.Writes[^3].RegisterAddress);
+        Assert.Equal(new byte[] { 0 }, bus.Writes[^3].Data);
         Assert.Equal(0x20, bus.Writes[^2].RegisterAddress);
         Assert.Equal(0x1f, bus.Writes[^1].RegisterAddress);
         Assert.Equal(new byte[] { 0x01 }, bus.Writes[^1].Data);

@@ -22,6 +22,14 @@ internal sealed class RdsOptions : IValidatableObject
 
     public bool Slow { get; init; }
 
+    public Mrds192ControlLineTransport ControlLineTransport { get; init; } = Mrds192ControlLineTransport.SerialPort;
+
+    public bool DtrEnabledIsSdaHigh { get; init; } = true;
+
+    public bool RtsEnabledIsSclHigh { get; init; } = true;
+
+    public bool CtsHighIsSdaHigh { get; init; } = true;
+
     public string StaticProgramService
     {
         get;
@@ -73,6 +81,11 @@ internal sealed class RdsOptions : IValidatableObject
         if (!Enum.IsDefined(DynamicPsMode))
         {
             yield return Error("Dynamic PS mode must be a value from 0 through 3.", nameof(DynamicPsMode));
+        }
+
+        if (!Enum.IsDefined(ControlLineTransport))
+        {
+            yield return Error("MRDS192 control-line transport must be a supported value.", nameof(ControlLineTransport));
         }
 
         if (!IsWithinHardwareRange(LabelPeriod, LabelPeriodSecondsPerRawValue, MaximumLabelPeriodRawValue))

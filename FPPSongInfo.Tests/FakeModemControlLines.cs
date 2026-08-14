@@ -10,12 +10,22 @@ internal sealed class FakeModemControlLines(IEnumerable<bool>? clearToSendValues
 
     public List<bool> ClockRisingDataValues { get; } = [];
 
+    public int DataTransitionsWhileClockHigh { get; private set; }
+
     public bool ClearToSend => _clearToSendValues.TryDequeue(out var value) && value;
 
     public bool DataTerminalReady
     {
         get => _dataTerminalReady;
-        set => _dataTerminalReady = value;
+        set
+        {
+            if (_requestToSend && _dataTerminalReady != value)
+            {
+                DataTransitionsWhileClockHigh++;
+            }
+
+            _dataTerminalReady = value;
+        }
     }
 
     public bool IsDisposed { get; private set; }

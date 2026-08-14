@@ -84,6 +84,10 @@ internal sealed class Mrds192DeviceClient : IMrds192DeviceClient
 
         var nextTypeB = !_lastSuccessfullyWrittenTypeB;
         await _bus.WriteAsync(
+            RadioTextEnableAddress,
+            new byte[] { 0 },
+            cancellationToken);
+        await _bus.WriteAsync(
             RadioTextAddress,
             RdsTextEncoder.EncodeRadioText(radioText),
             cancellationToken);

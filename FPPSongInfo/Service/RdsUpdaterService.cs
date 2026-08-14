@@ -67,6 +67,7 @@ internal sealed class RdsUpdaterService(
                     _failedRegister = "multiple";
                     await _deviceClient.InitializeAsync(stoppingToken);
                     retryAttempt = 0;
+                    _logger.LogInformation("RDS initialized successfully on port {PortName}", _rdsOptions.PortName);
                     DrainSongUpdates();
 
                     if (_currentSong is not null)
@@ -188,6 +189,11 @@ internal sealed class RdsUpdaterService(
         _failedOperation = "RadioText update";
         _failedRegister = "0x20/0x1F";
         await _deviceClient.WriteRadioTextAsync(radioText, cancellationToken);
+        _logger.LogDebug(
+            "RDS RadioText A/B toggle committed on port {PortName} for slot {SlotIndex}: {RadioText}",
+            _rdsOptions.PortName,
+            _currentSlotIndex,
+            radioText);
     }
 
     private async Task WaitForRetryAsync(TimeSpan retryDelay, CancellationToken stoppingToken)

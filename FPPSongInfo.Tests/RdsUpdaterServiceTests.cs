@@ -38,6 +38,7 @@ public sealed class RdsUpdaterServiceTests
         await service.UpdateAsync(new SongInfo("Artist", "Title"), CancellationToken.None);
 
         await AsyncAssert.EventuallyAsync(() => deviceClient.RadioTexts.Count == 1);
+        await Task.Delay(20);
         timeProvider.Advance(TimeSpan.FromSeconds(30));
         await AsyncAssert.EventuallyAsync(() => deviceClient.RadioTexts.Count >= 2);
 
@@ -61,6 +62,7 @@ public sealed class RdsUpdaterServiceTests
         await service.UpdateAsync(new SongInfo("First", "Song"), CancellationToken.None);
         await AsyncAssert.EventuallyAsync(() => deviceClient.RadioTexts.Count == 1);
 
+        await Task.Delay(20);
         timeProvider.Advance(TimeSpan.FromSeconds(30));
         await AsyncAssert.EventuallyAsync(() => deviceClient.RadioTexts.Count == 2);
         await service.UpdateAsync(new SongInfo("Latest", "Song"), CancellationToken.None);

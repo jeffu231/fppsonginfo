@@ -96,4 +96,23 @@ public sealed class OptionsValidationTests
         Assert.Contains(results, result => result.MemberNames.Contains(nameof(RdsOptions.LoopDelay)));
         Assert.Contains(results, result => result.MemberNames.Contains(nameof(RdsOptions.RadioTextRotationInterval)));
     }
+
+    [Fact]
+    public void RejectsAnUnsupportedMrds192ControlLineTransport()
+    {
+        var results = new List<ValidationResult>();
+        var options = new RdsOptions
+        {
+            Enabled = true,
+            PortName = "COM3",
+            StaticProgramService = "LTSHOW",
+            DynamicProgramService = "Compound Radio",
+            ControlLineTransport = (Mrds192ControlLineTransport)99
+        };
+
+        var isValid = Validator.TryValidateObject(options, new ValidationContext(options), results, true);
+
+        Assert.False(isValid);
+        Assert.Contains(results, result => result.MemberNames.Contains(nameof(RdsOptions.ControlLineTransport)));
+    }
 }

@@ -7,7 +7,7 @@ public sealed class SerialControlLineMrds192BusTests
     [Fact]
     public async Task WritesDeviceAddressRegisterAndDataAfterStartAsync()
     {
-        var lines = new FakeModemControlLines([false, false, false]);
+        var lines = new FakeModemControlLines([false, false, false, false, false]);
         using var bus = CreateBus(lines);
         bus.Open();
 
@@ -17,6 +17,7 @@ public sealed class SerialControlLineMrds192BusTests
         Assert.True(ContainsBitSequence(lines.ClockRisingDataValues, GetBits(0xd6)));
         Assert.True(ContainsBitSequence(lines.ClockRisingDataValues, GetBits(0x20)));
         Assert.True(ContainsBitSequence(lines.ClockRisingDataValues, GetBits(0xab)));
+        Assert.Equal(2, lines.DataTransitionsWhileClockHigh);
         Assert.True(lines.DataTerminalReady);
         Assert.True(lines.RequestToSend);
     }
@@ -24,7 +25,7 @@ public sealed class SerialControlLineMrds192BusTests
     [Fact]
     public async Task ThrowsWhenADeviceByteIsNotAcknowledgedAsync()
     {
-        var lines = new FakeModemControlLines([true]);
+        var lines = new FakeModemControlLines([false, false, true]);
         using var bus = CreateBus(lines);
         bus.Open();
 
@@ -35,9 +36,27 @@ public sealed class SerialControlLineMrds192BusTests
     }
 
     [Fact]
+    public async Task SupportsInvertedControlAndStatusLinePolarityAsync()
+    {
+        var lines = new FakeModemControlLines([true, true, true, true]);
+        using var bus = new SerialControlLineMrds192Bus(
+            lines,
+            new Mrds192BusTiming(TimeSpan.Zero, TimeSpan.Zero),
+            dtrEnabledIsSdaHigh: false,
+            rtsEnabledIsSclHigh: false,
+            ctsHighIsSdaHigh: false);
+        bus.Open();
+
+        await bus.WriteAsync(0x20, ReadOnlyMemory<byte>.Empty, CancellationToken.None);
+
+        Assert.False(lines.DataTerminalReady);
+        Assert.False(lines.RequestToSend);
+    }
+
+    [Fact]
     public async Task PerformsRandomReadWithRepeatedStartAsync()
     {
-        var lines = new FakeModemControlLines([false, false, false, .. GetBits(0xa5), .. GetBits(0x3c)]);
+        var lines = new FakeModemControlLines([false, false, false, false, false, .. GetBits(0xa5), .. GetBits(0x3c)]);
         using var bus = CreateBus(lines);
         bus.Open();
 
